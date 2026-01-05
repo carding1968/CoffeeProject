@@ -33,8 +33,7 @@ namespace CoffeeProject.Controllers
                     return StatusCode(418, "I'm a teapot");
                 }
 
-                var test = _counter.TotalCount;
-
+                
                 if (_counter.TotalCount == 5) {
                     _counter.TotalCount = 0;
                     return StatusCode(503, "Service Unavailable");
