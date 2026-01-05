@@ -20,7 +20,7 @@ namespace CoffeeProject.Controllers
         }
 
 
-        [HttpGet(Name = "GetBrewCoffee")]
+        [HttpGet]
         [ServiceFilter(typeof(ApiCounterFilter))]
         public async Task<IActionResult> Get()
         {
