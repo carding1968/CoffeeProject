@@ -10,11 +10,13 @@ namespace CoffeeProject.Controllers
     {
         private readonly IBrewCoffeeRepository _brewCoffeeRepository;
         private ApiRequestCounter _counter;
+        private readonly IWeatherRepository _weatherRepository;
 
-        public BrewCoffeeController(IBrewCoffeeRepository brewCoffeeRepository, ApiRequestCounter counter)
+        public BrewCoffeeController(IBrewCoffeeRepository brewCoffeeRepository, ApiRequestCounter counter, IWeatherRepository weatherRepository )
         {
             _brewCoffeeRepository = brewCoffeeRepository;
             _counter = counter;
+            _weatherRepository = weatherRepository;
         }
 
 
@@ -29,15 +31,25 @@ namespace CoffeeProject.Controllers
                 response.Message = model.Message;
                 response.Prepared = model.Prepared;
 
+
+                
+
+                
                 if (model.IsAprilFoolsDay) {
                     return StatusCode(418, "I'm a teapot");
                 }
 
-                var test = _counter.TotalCount;
+                
 
                 if (_counter.TotalCount == 5) {
                     _counter.TotalCount = 0;
                     return StatusCode(503, "Service Unavailable");
+                }
+
+
+                var weather = await _weatherRepository.GetCurrentConditions("264885");
+                if(Double.Parse(weather.Temperature.Metric.Value) > 30.0) {
+                    response.Message += "Your refreshing iced coffee is ready";
                 }
 
                 return Ok(response);

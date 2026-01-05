@@ -12,6 +12,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IBrewCoffeeRepository, BrewCoffeeRepository>();
+builder.Services.AddScoped<IWeatherRepository, AccuWeatherRepository>();
 builder.Services.AddSingleton<ApiRequestCounter>();
 builder.Services.AddScoped<ApiCounterFilter>();
 
