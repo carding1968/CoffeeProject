@@ -12,8 +12,6 @@ builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IBrewCoffeeRepository, BrewCoffeeRepository>();
-builder.Services.AddSingleton<ApiRequestCounter>();
-builder.Services.AddScoped<ApiCounterFilter>();
 
 var app = builder.Build();
 

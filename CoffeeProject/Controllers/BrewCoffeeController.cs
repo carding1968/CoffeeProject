@@ -9,19 +9,24 @@ namespace CoffeeProject.Controllers
     public class BrewCoffeeController : ControllerBase
     {
         private readonly IBrewCoffeeRepository _brewCoffeeRepository;
-        private ApiRequestCounter _counter;
-
-        public BrewCoffeeController(IBrewCoffeeRepository brewCoffeeRepository, ApiRequestCounter counter)
+        private static int callCount = 0;
+        
+        public BrewCoffeeController(IBrewCoffeeRepository brewCoffeeRepository)
         {
             _brewCoffeeRepository = brewCoffeeRepository;
-            _counter = counter;
+            
+        }
+
+        private void IncrementCallCount()
+        {
+            callCount++;
         }
 
 
         [HttpGet]
-        [ServiceFilter(typeof(ApiCounterFilter))]
         public async Task<IActionResult> Get()
         {
+            IncrementCallCount();
             BrewCoffeeResponse response = new BrewCoffeeResponse();
             try
             {
@@ -33,11 +38,13 @@ namespace CoffeeProject.Controllers
                     return StatusCode(418, "I'm a teapot");
                 }
 
-                
-                if (_counter.TotalCount == 5) {
-                    _counter.TotalCount = 0;
+
+                if (callCount == 5)
+                {
+                    callCount = 0;
                     return StatusCode(503, "Service Unavailable");
                 }
+
 
                 return Ok(response);
                
@@ -49,5 +56,8 @@ namespace CoffeeProject.Controllers
             
             
         }
+
+        //for testing purposes
+        internal static void ResetCallCount() => callCount = 0;
     }
 }

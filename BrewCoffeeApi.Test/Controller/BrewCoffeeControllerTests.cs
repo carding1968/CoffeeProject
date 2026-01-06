@@ -12,20 +12,24 @@ namespace BrewCoffeeApi.Tests.Controller
     
     public class BrewCoffeeControllerTests
     {
+        private readonly Mock<IBrewCoffeeRepository> _mockRepo;
+
+        public BrewCoffeeControllerTests()
+        {
+            _mockRepo = new Mock<IBrewCoffeeRepository>();
+        }
+
         [Fact]
-        public async Task Get_ReturnsOk_When_NormalRequest()
+        public async Task Get_ReturnsOk_WhenNormalDay()
         {
             // Arrange
-            var counter = new ApiRequestCounter { TotalCount = 3 };
-            var repoMock = new Mock<IBrewCoffeeRepository>();
-            repoMock.Setup(r => r.Get()).ReturnsAsync(new BrewCoffeeModel
+            _mockRepo.Setup(r => r.Get()).ReturnsAsync(new BrewCoffeeModel
             {
-                Message = "Coffee Ready",
-                Prepared = DateTime.Now
-                
+                Message = "Test Coffee",
+                Prepared = new DateTime(2026, 1, 6) // normal day
             });
 
-            var controller = new BrewCoffeeController(repoMock.Object, counter);
+            var controller = new BrewCoffeeController(_mockRepo.Object);
 
             // Act
             var result = await controller.Get();
@@ -33,48 +37,69 @@ namespace BrewCoffeeApi.Tests.Controller
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             var response = Assert.IsType<BrewCoffeeResponse>(okResult.Value);
-            Assert.Equal("Coffee Ready", response.Message);
+            Assert.Equal("Test Coffee", response.Message);
             Assert.True(true);
         }
 
-
-
         [Fact]
-        public async Task Get_Returns503_And_ResetsCounter_When_TotalCountEquals5()
+        public async Task Get_ReturnsTeapot_OnAprilFools()
         {
             // Arrange
-            var counter = new ApiRequestCounter { TotalCount = 5 };
-            var repoMock = new Mock<IBrewCoffeeRepository>();
-            repoMock.Setup(r => r.Get()).ReturnsAsync(new BrewCoffeeModel
+            _mockRepo.Setup(r => r.Get()).ReturnsAsync(new BrewCoffeeModel
             {
-                Message = "Coffee Ready",
-                Prepared = DateTime.Now,
-                
+                Message = "Test Coffee",
+                Prepared = new DateTime(2026, 4, 1) // April 1
             });
 
-            var controller = new BrewCoffeeController(repoMock.Object, counter);
+            var controller = new BrewCoffeeController(_mockRepo.Object);
 
             // Act
             var result = await controller.Get();
 
             // Assert
-            var objectResult = Assert.IsType<ObjectResult>(result);
-            Assert.Equal(503, objectResult.StatusCode);
-            Assert.Equal("Service Unavailable", objectResult.Value);
-
-            // Counter should be reset
-            Assert.Equal(0, counter.TotalCount);
+            var teapotResult = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(418, teapotResult.StatusCode);
+            Assert.Equal("I'm a teapot", teapotResult.Value);
         }
 
         [Fact]
-        public async Task Get_Returns500_When_RepositoryThrowsException()
+        public async Task Get_ReturnsServiceUnavailable_OnFifthCall()
+        {
+            // Reset call count before test
+            BrewCoffeeController.ResetCallCount();
+
+            // Arrange
+            _mockRepo.Setup(r => r.Get()).ReturnsAsync(new BrewCoffeeModel
+            {
+                Message = "Test Coffee",
+                Prepared = new DateTime(2026, 1, 6)
+            });
+
+            var controller = new BrewCoffeeController(_mockRepo.Object);
+
+            // Call 4 times first
+            for (int i = 0; i < 4; i++)
+            {
+                await controller.Get();
+            }
+
+            // Act - 5th call
+            var result = await controller.Get();
+
+            // Assert
+            var serviceResult = Assert.IsType<ObjectResult>(result);
+            Assert.Equal(503, serviceResult.StatusCode);
+            Assert.Equal("Service Unavailable", serviceResult.Value);
+        }
+
+
+        [Fact]
+        public async Task Get_ReturnsInternalServerError_OnException()
         {
             // Arrange
-            var counter = new ApiRequestCounter { TotalCount = 1 };
-            var repoMock = new Mock<IBrewCoffeeRepository>();
-            repoMock.Setup(r => r.Get()).ThrowsAsync(new Exception("Test exception"));
+            _mockRepo.Setup(r => r.Get()).ThrowsAsync(new Exception("Repository failed"));
 
-            var controller = new BrewCoffeeController(repoMock.Object, counter);
+            var controller = new BrewCoffeeController(_mockRepo.Object);
 
             // Act
             var result = await controller.Get();
@@ -82,7 +107,7 @@ namespace BrewCoffeeApi.Tests.Controller
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(result);
             Assert.Equal(500, objectResult.StatusCode);
-            Assert.Contains("Test exception", objectResult.Value.ToString());
+            Assert.Contains("Something went wrong: Repository failed", objectResult.Value.ToString());
         }
     }
 
