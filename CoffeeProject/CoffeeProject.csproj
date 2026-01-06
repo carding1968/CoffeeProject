@@ -11,5 +11,9 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.0" />
   </ItemGroup>
-
+  <ItemGroup>
+		<AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+			<_Parameter1>BrewCoffeeApi.Tests</_Parameter1>
+		</AssemblyAttribute>
+  </ItemGroup>
 </Project>

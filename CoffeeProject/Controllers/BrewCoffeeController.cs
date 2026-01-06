@@ -67,5 +67,8 @@ namespace CoffeeProject.Controllers
             
             
         }
+
+        //for testing purposes
+        internal static void ResetCallCount() => callCount = 0;
     }
 }
