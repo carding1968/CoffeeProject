@@ -16,7 +16,6 @@ namespace BrewCoffeeApi.Tests.Controller
         public async Task Get_ReturnsOk_When_NormalRequest()
         {
             // Arrange
-            var counter = new ApiRequestCounter { TotalCount = 3 };
             var repoMock1 = new Mock<IBrewCoffeeRepository>();
             var repoMoc2 = new Mock<IWeatherRepository>();
             repoMock1.Setup(r => r.Get()).ReturnsAsync(new BrewCoffeeModel
@@ -26,7 +25,7 @@ namespace BrewCoffeeApi.Tests.Controller
                 
             });
 
-            var controller = new BrewCoffeeController(repoMock1.Object, counter, repoMoc2.Object);
+            var controller = new BrewCoffeeController(repoMock1.Object, repoMoc2.Object);
 
             // Act
             var result = await controller.Get();
@@ -44,7 +43,6 @@ namespace BrewCoffeeApi.Tests.Controller
         public async Task Get_Returns503_And_ResetsCounter_When_TotalCountEquals5()
         {
             // Arrange
-            var counter = new ApiRequestCounter { TotalCount = 5 };
             var repoMock1 = new Mock<IBrewCoffeeRepository>();
             var repoMoc2 = new Mock<IWeatherRepository>();
             repoMock1.Setup(r => r.Get()).ReturnsAsync(new BrewCoffeeModel
@@ -54,7 +52,7 @@ namespace BrewCoffeeApi.Tests.Controller
                 
             });
 
-            var controller = new BrewCoffeeController(repoMock1.Object, counter, repoMoc2.Object);
+            var controller = new BrewCoffeeController(repoMock1.Object, repoMoc2.Object);
 
             // Act
             var result = await controller.Get();
@@ -65,19 +63,18 @@ namespace BrewCoffeeApi.Tests.Controller
             Assert.Equal("Service Unavailable", objectResult.Value);
 
             // Counter should be reset
-            Assert.Equal(0, counter.TotalCount);
+            Assert.Equal(0, 5);
         }
 
         [Fact]
         public async Task Get_Returns500_When_RepositoryThrowsException()
         {
             // Arrange
-            var counter = new ApiRequestCounter { TotalCount = 1 };
             var repoMock1 = new Mock<IBrewCoffeeRepository>();
             var repoMoc2 = new Mock<IWeatherRepository>();
             repoMock1.Setup(r => r.Get()).ThrowsAsync(new Exception("Test exception"));
 
-            var controller = new BrewCoffeeController(repoMock1.Object, counter, repoMoc2.Object);
+            var controller = new BrewCoffeeController(repoMock1.Object, repoMoc2.Object);
 
             // Act
             var result = await controller.Get();
